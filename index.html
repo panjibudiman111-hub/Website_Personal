@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Data Karyawan & Training </title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-light">
+
+    <!-- Login Section (Unchanged) -->
+    <section id="loginSection" class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow-lg p-4" style="width: 400px;">
+            <div class="text-center mb-4">
+                <h3 class="text-primary"><i class="fas fa-users-cog"></i> People Development</h3>
+                <p class="text-muted">Login Admin</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="username" class="form-control" required placeholder="Username">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-control" required placeholder="Password">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Dashboard Layout -->
+    <div id="wrapper" class="d-none">
+        
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h4><i class="fas fa-bolt me-2"></i> PPD System</h4>
+            </div>
+            <ul class="list-unstyled components">
+                <li>
+                    <a href="#" class="active" id="btnDashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                </li>
+                <li>
+                    <a href="#" id="btnPersonalKaryawan"><i class="fas fa-user-tie"></i> Personal Karyawan</a>
+                </li>
+                <li>
+                    <a href="#" id="btnReportTraining"><i class="fas fa-file-alt"></i> Report Training</a>
+                </li>
+                <li>
+                    <a href="#" id="btnEisKarawang"><i class="fas fa-folder"></i> EIS KARAWANG</a>
+                </li>
+                <li>
+                    <a href="#" id="btnEisCibitung"><i class="fas fa-folder"></i> EIS CIBITUNG</a>
+                </li>
+                <li>
+                    <a href="#" id="btnTanoko"><i class="fas fa-chart-pie"></i> Summary TANOKO MP</a>
+                </li>
+                <li>
+                    <a href="#attendanceSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                        <i class="fas fa-clipboard-list"></i> Daftar Hadir Training
+                    </a>
+                    <ul class="collapse list-unstyled" id="attendanceSubmenu">
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Januari')">Januari</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Februari')">Februari</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Maret')">Maret</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('April')">April</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Mei')">Mei</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Juni')">Juni</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Juli')">Juli</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Agustus')">Agustus</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('September')">September</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Oktober')">Oktober</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('November')">November</a></li>
+                        <li><a href="#" class="text-decoration-none ps-4 py-1 d-block small" onclick="openAttendance('Desember')">Desember</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#employeeModal" id="btnAddEmployeeSidebar"><i class="fas fa-user-plus"></i> Tambah Karyawan</a>
+                </li>
+                <li>
+                    <a href="#" id="btnSettingsSidebar"><i class="fas fa-cog"></i> Settings</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg top-navbar">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="ms-auto user-profile">
+                        <span class="me-2">Admin PPD</span>
+                        <button class="btn btn-sm btn-outline-light ms-3" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="container-fluid">
+                    
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </nav>
+
+                    <!-- Stats Row -->
+                    <div id="dashboardSection">
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-2 mb-2">
+                                <div class="card h-100" style="background:#87CEFA; color:#000;">
+                                    <div class="card-body">
+                                        <div class="fw-bold small">Total Karyawan</div>
+                                        <div class="display-6 fw-bold" id="totalEmployeesDisplay">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2 mb-2">
+                                <div class="card h-100" style="background:#B0D4F1; color:#000;">
+                                    <div class="card-body">
+                                        <div class="fw-bold small">Shift WHITE</div>
+                                        <div class="display-6 fw-bold" id="shiftWhiteDisplay">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2 mb-2">
+                                <div class="card h-100" style="background:#A6C8E3; color:#000;">
+                                    <div class="card-body">
+                                        <div class="fw-bold small">Shift RED</div>
+                                        <div class="display-6 fw-bold" id="shiftRedDisplay">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2 mb-2">
+                                <div class="card h-100" style="background:#2E6FA7; color:#fff;">
+                                    <div class="card-body">
+                                        <div class="fw-bold small">NonShift</div>
+                                        <div class="display-6 fw-bold" id="nonShiftDisplay">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2 mb-2">
+                                <div class="card h-100" style="background:#0B2A45; color:#fff;">
+                                    <div class="card-body">
+                                        <div class="fw-bold small">Permanent</div>
+                                        <div class="display-6 fw-bold" id="permanentDisplay">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2 mb-2">
+                                <div class="card h-100" style="background:#FFEB3B; color:#000;">
+                                    <div class="card-body">
+                                        <div class="fw-bold small">Kontrak</div>
+                                        <div class="display-6 fw-bold" id="kontrakDisplay">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Table Card -->
+                        <div class="card">
+                            <div class="card-header">
+                                <span><i class="fas fa-table me-2"></i> Daftar Karyawan</span>
+                                <div class="d-flex">
+                                    <input type="text" id="searchInput" class="form-control form-control-sm me-2" placeholder="Cari Nama / NIK..." style="width: 200px;">
+                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#employeeModal" id="btnAddEmployee">
+                                        <i class="fas fa-plus"></i> Tambah
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Foto</th>
+                                                <th>NIK</th>
+                                                <th>Nama</th>
+                                                <th>Bagian</th>
+                                                <th>Perusahaan</th>
+                                                <th>Status</th>
+                                                <th>Tgl Masuk</th>
+                                                <th class="text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="employeeTableBody">
+                                            <!-- Data -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <span id="paginationInfo" class="text-muted small">Showing 0 of 0 entries</span>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0" id="pagination">
+                                        <!-- Pagination -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Karyawan Section -->
+                    <div id="personalKaryawanSection" class="d-none">
+                        
+                        <!-- Header -->
+                        <div class="bg-navy text-white p-2 fw-bold mb-3 d-flex justify-content-between align-items-center rounded-top">
+                            <span><i class="fas fa-user-tie me-2"></i> PERSONAL TRAINING KARYAWAN</span>
+                            <div class="input-group input-group-sm w-auto">
+                                <input type="text" id="pkSearchInput" class="form-control" placeholder="Cari NIK / Nama..." list="pkEmployeeList">
+                                <datalist id="pkEmployeeList"></datalist>
+                                <button class="btn btn-light btn-sm" id="btnSearchPersonal">Cari</button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-5">
+                                
+                                <!-- Profile Card -->
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3 text-center">
+                                                <img id="pkPhoto" src="https://via.placeholder.com/100" class="rounded-circle border" style="width: 80px; height: 80px; object-fit: cover;">
+                                            </div>
+                                            <div class="w-100 small">
+                                                <div class="row mb-1">
+                                                    <div class="col-4 fw-bold">Nama</div>
+                                                    <div class="col-8">: <span id="pkName">-</span></div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-4 fw-bold">Perusahaan</div>
+                                                    <div class="col-8">: <span id="pkCompany">-</span></div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-4 fw-bold">No. NIK</div>
+                                                    <div class="col-8">: <span id="pkNik">-</span></div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-4 fw-bold">Tgl Masuk</div>
+                                                    <div class="col-8">: <span id="pkJoinDate">-</span></div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-4 fw-bold">Bagian</div>
+                                                    <div class="col-8">: <span id="pkDept">-</span></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- History Training -->
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-header bg-navy text-white fw-bold py-1 small">
+                                        HISTORY TRAINING
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive" style="max-height: 300px;">
+                                            <table class="table table-sm table-striped mb-0 small">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Materi Training</th>
+                                                        <th class="text-center" style="width: 80px;">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="pkHistoryTrainingBody">
+                                                    <!-- Dynamic Content -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- History Training Multi Skill -->
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-header bg-navy text-white fw-bold py-1 small">
+                                        HISTORY TRAINING MULTI SKILL
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive" style="max-height: 250px;">
+                                            <table class="table table-sm table-bordered mb-0 small text-center align-middle" style="font-size: 0.75rem;">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>No</th>
+                                                        <th>Nama Part</th>
+                                                        <th>Tgl</th>
+                                                        <th>Trainer</th>
+                                                        <th>Ket</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="pkHistoryMultiSkillBody">
+                                                    <!-- Dynamic Content -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Summary Tanoko -->
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-header bg-navy text-white fw-bold py-1 small">
+                                        SUMMARY TANOKO
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <img id="pkTanokoPhoto" src="https://via.placeholder.com/60" class="rounded-circle border" style="width: 60px; height: 60px; object-fit: cover;">
+                                            </div>
+                                            <div class="me-4">
+                                                <h1 class="fw-bold display-4 mb-0" id="pkTanokoPercent">0%</h1>
+                                            </div>
+                                            <div class="small border-start ps-3 text-muted" style="font-size: 0.75rem; line-height: 1.2;">
+                                                <strong>NOTE :</strong><br>
+                                                Persentase nilai ini adalah Rata - rata Skill MP dari Semua Part instalasi dan model unit.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="col-md-7">
+                                
+                                <!-- Skill By Model -->
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-header bg-navy text-white fw-bold py-1 small">
+                                        SKILL BY MODEL
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row row-cols-3 g-2" id="pkSkillByModelContainer">
+                                            <!-- Dynamic Grid of Charts -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- History Training Multi Skill By Part (Bar Charts) -->
+                                <div class="card shadow-sm mb-3 border-0">
+                                    <div class="card-header bg-navy text-white fw-bold py-1 small d-flex justify-content-between align-items-center">
+                                        <span>HISTORY TRAINING MULTI SKILL BY PART</span>
+                                        <button type="button" class="btn btn-sm btn-warning" id="pkMultiSkillEditBtn">Edit Angka</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div style="height: 300px;">
+                                            <canvas id="pkMultiSkillChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Employee Modal -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="employeeModalTitle">Tambah Karyawan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="employeeForm">
+                        <input type="hidden" id="empId">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                <div class="mb-2">
+                                    <img id="empPhotoPreview" src="https://via.placeholder.com/150" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                                </div>
+                                <input type="file" id="empPhoto" class="form-control form-control-sm" accept="image/*">
+                                <small class="text-muted">Upload Foto (Max 500KB)</small>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nama Lengkap</label>
+                                        <input type="text" id="empName" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">NIK</label>
+                                        <input type="text" id="empNIK" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Perusahaan</label>
+                                        <input type="text" id="empCompany" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Bagian / Divisi</label>
+                                        <input type="text" id="empDepartment" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Jabatan</label>
+                                        <input type="text" id="empPosition" class="form-control">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Level</label>
+                                        <select id="empLevel" class="form-select">
+                                            <option value="">- Pilih -</option>
+                                            <option value="Staff">Staff</option>
+                                            <option value="SectionHead">Section Head</option>
+                                            <option value="Manager">Manager</option>
+                                            <option value="Operator">Operator</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Shift</label>
+                                        <select id="empShift" class="form-select">
+                                            <option value="">- Pilih -</option>
+                                            <option value="Non-Shift">Non-Shift</option>
+                                            <option value="White">White</option>
+                                            <option value="Red">Red</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tanggal Masuk</label>
+                                        <input type="date" id="empJoinDate" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveEmployeeBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Training History Modal -->
+    <div class="modal fade" id="trainingModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">History Training - <span id="trainingEmpName"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label small">Materi</label>
+                            <input type="text" id="trainMateri" class="form-control form-control-sm" list="trainMateriOptions" placeholder="Materi Training">
+                            <datalist id="trainMateriOptions">
+                                <option value="5R">
+                                <option value="All Toyota Security Guideline">
+                                <option value="AP PIO Standart">
+                                <option value="APD (alat pelindung diri)">
+                                <option value="ATSG & VDQI">
+                                <option value="ATSG (All Toyota Security Guideline)">
+                                <option value="Audit AP PPO">
+                                <option value="Basic Mentality">
+                                <option value="Body Struktur">
+                                <option value="Build In Quality">
+                                <option value="Design Competency">
+                                <option value="Effective Manufacturing Leadership for Production Line Leader">
+                                <option value="Effective Manufacturing Leadership for Production Section Head">
+                                <option value="Effective Presentation">
+                                <option value="Fundamental Skill">
+                                <option value="Ide Berkonsep">
+                                <option value="Internal Auditor Training QMS ISO 9001:2015 Based on ISO 19011 : 2018">
+                                <option value="ISO 9001:2015 Quality Management Systems Awareness Training">
+                                <option value="ISO 9001:2015 Quality Management Systems Internal Auditor Training">
+                                <option value="Job Instruction">
+                                <option value="Key Performance Indicators">
+                                <option value="Kiken Youchi">
+                                <option value="Knowledge Tools & Training Alat Peraga">
+                                <option value="Leadership Programme">
+                                <option value="Motivational Leadership Training">
+                                <option value="Pelatihan P3K">
+                                <option value="Pembekalan Pembentukan Karakter">
+                                <option value="Performance Appraisal">
+                                <option value="Pratical Leadership Skill">
+                                <option value="Safety Driving">
+                                <option value="Safety Induksi">
+                                <option value="Salary Adjustment">
+                                <option value="Top Gun Leadership For Manager & Supervisor">
+                                <option value="TPS (Toyota Production System)">
+                                <option value="Training Needs Analysis (TNA) Base Performance and Competency">
+                                <option value="Warehouse Operation & Management">
+                                <option value="Workload Analysis">
+                            </datalist>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Tgl/Bln/Tahun</label>
+                            <input type="date" id="trainDate" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small">Durasi (Jam/Hari)</label>
+                            <input type="text" id="trainDuration" class="form-control form-control-sm" placeholder="Durasi">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Trainer</label>
+                            <input type="text" id="trainTrainer" class="form-control form-control-sm" list="trainTrainerOptions" placeholder="Trainer">
+                            <datalist id="trainTrainerOptions">
+                                <option value="Panji Budiman">
+                                <option value="Rizki Septian S.T">
+                                <option value="Eka Misyadi">
+                                <option value="Rizky Yulanda">
+                                <option value="Bangun Jovi Duano">
+                                <option value="Poeloeng">
+                                <option value="Andy Surya">
+                                <option value="Andi Marwantoko">
+                                <option value="Septiawan Dwi Janarko">
+                                <option value="Herlilda Mahenssa Ramadhan">
+                                <option value="Dian Eka S">
+                                <option value="Wahono">
+                                <option value="Wawan Iswanto">
+                                <option value="Alhamsah">
+                            </datalist>
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <div class="input-group input-group-sm">
+                                <input type="file" id="trainCert" class="form-control" accept="image/*,application/pdf">
+                                <button class="btn btn-success" id="addTrainingBtn"><i class="fas fa-plus"></i> Tambah</button>
+                            </div>
+                            <small class="text-muted">Sertifikat (PDF/JPG)</small>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Materi</th>
+                                    <th>Tgl/Bln/Tahun</th>
+                                    <th>Durasi</th>
+                                    <th>Trainer</th>
+                                    <th>Sertifikat</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trainingTableBody">
+                                <!-- Training data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-warning" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF Form</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Training Modal -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width: 95%;">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Report Training</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <button class="btn btn-success" id="btnAddReportData">
+                            <i class="fas fa-plus"></i> Tambah Data Report
+                        </button>
+                        <button class="btn btn-danger" id="exportReportPdfBtn">
+                            <i class="fas fa-file-pdf"></i> Export PDF Report
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover small">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>No</th>
+                                    <th>NIK</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Divisi</th>
+                                    <th>Level</th>
+                                    <th>Jabatan</th>
+                                    <th>Shift</th>
+                                    <th>Materi Training</th>
+                                    <th>Penyelenggara</th>
+                                    <th>Tgl Mulai</th>
+                                    <th>Tgl Berakhir</th>
+                                    <th>Tahun</th>
+                                    <th>Edit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <!-- Report Data -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Report Data Modal -->
+    <div class="modal fade" id="inputReportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="inputReportTitle">Input Data Report Training</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportForm">
+                        <input type="hidden" id="reportEmpId">
+                        <input type="hidden" id="reportTrainId">
+                        
+                        <!-- Employee Selection -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Cari Karyawan (NIK / Nama)</label>
+                                <input class="form-control" list="employeeListOptions" id="reportSearchEmp" placeholder="Ketik NIK atau Nama...">
+                                <datalist id="employeeListOptions">
+                                    <!-- Options populated by JS -->
+                                </datalist>
+                            </div>
+                        </div>
+
+                        <!-- Readonly Employee Info -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body py-2">
+                                <div class="row small">
+                                    <div class="col-md-4"><strong>Nama:</strong> <span id="repName">-</span></div>
+                                    <div class="col-md-4"><strong>NIK:</strong> <span id="repNIK">-</span></div>
+                                    <div class="col-md-4"><strong>Divisi:</strong> <span id="repDept">-</span></div>
+                                    <div class="col-md-4"><strong>Jabatan:</strong> <span id="repPos">-</span></div>
+                                    <div class="col-md-4"><strong>Level:</strong> <span id="repLvl">-</span></div>
+                                    <div class="col-md-4"><strong>Shift:</strong> <span id="repShift">-</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Training Input -->
+                        <h6 class="border-bottom pb-2">Data Training</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Materi Training</label>
+                                <input type="text" id="repMateri" class="form-control" list="materiOptions" required placeholder="Pilih atau ketik materi...">
+                                <datalist id="materiOptions">
+                                    <option value="5R">
+                                    <option value="All Toyota Security Guideline">
+                                    <option value="AP PIO Standart">
+                                    <option value="APD (alat pelindung diri)">
+                                    <option value="ATSG & VDQI">
+                                    <option value="ATSG (All Toyota Security Guideline)">
+                                    <option value="Audit AP PPO">
+                                    <option value="Basic Mentality">
+                                    <option value="Body Struktur">
+                                    <option value="Build In Quality">
+                                    <option value="Design Competency">
+                                    <option value="Effective Manufacturing Leadership for Production Line Leader">
+                                    <option value="Effective Manufacturing Leadership for Production Section Head">
+                                    <option value="Effective Presentation">
+                                    <option value="Fundamental Skill">
+                                    <option value="Ide Berkonsep">
+                                    <option value="Internal Auditor Training QMS ISO 9001:2015 Based on ISO 19011 : 2018">
+                                    <option value="ISO 9001:2015 Quality Management Systems Awareness Training">
+                                    <option value="ISO 9001:2015 Quality Management Systems Internal Auditor Training">
+                                    <option value="Job Instruction">
+                                    <option value="Key Performance Indicators">
+                                    <option value="Kiken Youchi">
+                                    <option value="Knowledge Tools & Training Alat Peraga">
+                                    <option value="Leadership Programme">
+                                    <option value="Motivational Leadership Training">
+                                    <option value="Pelatihan P3K">
+                                    <option value="Pembekalan Pembentukan Karakter">
+                                    <option value="Performance Appraisal">
+                                    <option value="Pratical Leadership Skill">
+                                    <option value="Safety Driving">
+                                    <option value="Safety Induksi">
+                                    <option value="Salary Adjustment">
+                                    <option value="Top Gun Leadership For Manager & Supervisor">
+                                    <option value="TPS (Toyota Production System)">
+                                    <option value="Training Needs Analysis (TNA) Base Performance and Competency">
+                                    <option value="Warehouse Operation & Management">
+                                    <option value="Workload Analysis">
+                                </datalist>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Penyelenggara (Trainer)</label>
+                                <input type="text" id="repTrainer" class="form-control" list="trainerOptions" required placeholder="Pilih atau ketik trainer...">
+                                <datalist id="trainerOptions">
+                                    <option value="Panji Budiman">
+                                    <option value="Rizki Septian S.T">
+                                    <option value="Eka Misyadi">
+                                    <option value="Rizky Yulanda">
+                                    <option value="Bangun Jovi Duano">
+                                    <option value="Poeloeng">
+                                    <option value="Andy Surya">
+                                    <option value="Andi Marwantoko">
+                                    <option value="Septiawan Dwi Janarko">
+                                    <option value="Herlilda Mahenssa Ramadhan">
+                                    <option value="Dian Eka S">
+                                    <option value="Wahono">
+                                    <option value="Wawan Iswanto">
+                                    <option value="Alhamsah">
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tgl Mulai</label>
+                                <input type="date" id="repStartDate" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tgl Berakhir</label>
+                                <input type="date" id="repEndDate" class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Durasi</label>
+                                <input type="text" id="repDuration" class="form-control" placeholder="Contoh: 2 Jam">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveReportBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi Skill Modal -->
+    <div class="modal fade" id="multiSkillModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-purple text-white" style="background-color: #6f42c1;">
+                    <h5 class="modal-title">Training Multi Skill - <span id="msEmpName"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Model Project</label>
+                            <select id="msModel" class="form-select">
+                                <option value="">- Pilih Model -</option>
+                                <option value="AGYA">AGYA</option>
+                                <option value="FORTUNER">FORTUNER</option>
+                                <option value="INNOVA ZENIX">INNOVA ZENIX</option>
+                                <option value="INNOVA REBORN">INNOVA REBORN</option>
+                                <option value="RAIZE">RAIZE</option>
+                                <option value="YARIS">YARIS</option>
+                                <option value="HIACE PREMIO">HIACE PREMIO</option>
+                                <option value="HIACE COMMUTER">HIACE COMMUTER</option>
+                                <option value="HILUX RANGGA">HILUX RANGGA</option>
+                                <option value="HILUX DC">HILUX DC</option>
+                                <option value="ALPHARD">ALPHARD</option>
+                                <option value="VELLFIRE">VELLFIRE</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="border-bottom pb-2">Daftar Part Multi Skill</h6>
+                    <div class="row mb-2">
+                        <div class="col-md-3">
+                            <input type="text" id="msPartName" class="form-control form-control-sm" placeholder="Nama Part">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" id="msDateTrain" class="form-control form-control-sm" placeholder="Tgl Training">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="date" id="msDateEval" class="form-control form-control-sm" placeholder="Tgl Evaluasi">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" id="msTrainer" class="form-control form-control-sm" placeholder="Trainer">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" id="msNote" class="form-control form-control-sm" placeholder="Keterangan">
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-success btn-sm w-100" id="btnAddMultiSkillPart"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th rowspan="2">No</th>
+                                    <th rowspan="2">Nama Part</th>
+                                    <th colspan="2">Tanggal</th>
+                                    <th rowspan="2">Trainer</th>
+                                    <th rowspan="2">Keterangan</th>
+                                    <th rowspan="2">Aksi</th>
+                                </tr>
+                                <tr>
+                                    <th>Training</th>
+                                    <th>Evaluasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="multiSkillTableBody">
+                                <!-- Data populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveMultiSkillBtn">Simpan Data</button>
+                    <button type="button" class="btn btn-danger" id="exportMultiSkillPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluasi Multi Skill Modal -->
+    <div class="modal fade" id="evalMultiSkillModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-white text-dark border-bottom">
+                    <h5 class="modal-title"><i class="fas fa-clipboard-check"></i> Form Evaluasi Multi Skill</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    
+                    <div class="paper-form mx-auto" style="max-width: 1000px;">
+                        <!-- Paper Header -->
+                        <div class="paper-header d-flex">
+                            <div class="logo-box">
+                                <img id="evalFormLogo" src="" alt="Logo" style="max-width: 100%; max-height: 50px; display: none;">
+                                <span id="evalFormLogoPlaceholder" class="text-muted small">Logo</span>
+                            </div>
+                            <div class="title-box">
+                                <h5 class="mb-1 fw-bold">PT. SENTRAL MULTI INDOTAMA</h5>
+                                <h6 class="mb-0 fw-bold text-decoration-underline">CHECK SHEET EVALUASI MULTI SKILL</h6>
+                            </div>
+                            <div class="info-box">
+                                <div class="info-row">
+                                    <div class="label">No. Dokumen</div>
+                                    <div class="value">SMI-FR-PPD-02-03</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="label">Revisi</div>
+                                    <div class="value">00</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="label">Hal</div>
+                                    <div class="value">1</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="label">Tgl Berlaku</div>
+                                    <div class="value">02 Feb 2026</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paper Info -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center mb-1">
+                                    <div style="width: 80px;" class="fw-bold small">Nama</div>
+                                    <div class="me-2">:</div>
+                                    <input type="text" id="evalNameInput" class="form-input-line small" readonly>
+                                </div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <div style="width: 80px;" class="fw-bold small">NIK</div>
+                                    <div class="me-2">:</div>
+                                    <input type="text" id="evalNikInput" class="form-input-line small" readonly>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div style="width: 80px;" class="fw-bold small">Model</div>
+                                    <div class="me-2">:</div>
+                                    <select id="evalModel" class="form-input-line small" style="background: transparent;">
+                                        <option value="">- Pilih Model -</option>
+                                        <option value="FORTUNER">FORTUNER</option>
+                                        <option value="INNOVA ZENIX">INNOVA ZENIX</option>
+                                        <option value="REBORN">REBORN</option>
+                                        <option value="AGYA">AGYA</option>
+                                        <option value="RAIZE">RAIZE</option>
+                                        <option value="YARIS">YARIS</option>
+                                        <option value="HIACE PREMIO">HIACE PREMIO</option>
+                                        <option value="HIACE COMMTUTER">HIACE COMMTUTER</option>
+                                        <option value="HILUX RANGGA">HILUX RANGGA</option>
+                                        <option value="HILUX DC">HILUX DC</option>
+                                        <option value="ALPHARD">ALPHARD</option>
+                                        <option value="VERLLFIRE">VERLLFIRE</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paper Table -->
+                        <div class="table-responsive">
+                            <table class="paper-table mb-3">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="3" style="width: 100px;">CATEGORY</th>
+                                        <th rowspan="3" style="width: 150px;">ITEM CHECK</th>
+                                        <th rowspan="3" style="width: 250px;">EVALUASI</th>
+                                        <!-- 6 Date Inputs, each colspan 2 -->
+                                        <th colspan="2" class="p-0"><input type="date" class="form-control form-control-sm border-0 text-center p-0" id="evalDate_0"></th>
+                                        <th colspan="2" class="p-0"><input type="date" class="form-control form-control-sm border-0 text-center p-0" id="evalDate_1"></th>
+                                        <th colspan="2" class="p-0"><input type="date" class="form-control form-control-sm border-0 text-center p-0" id="evalDate_2"></th>
+                                        <th colspan="2" class="p-0"><input type="date" class="form-control form-control-sm border-0 text-center p-0" id="evalDate_3"></th>
+                                        <th colspan="2" class="p-0"><input type="date" class="form-control form-control-sm border-0 text-center p-0" id="evalDate_4"></th>
+                                        <th colspan="2" class="p-0"><input type="date" class="form-control form-control-sm border-0 text-center p-0" id="evalDate_5"></th>
+                                    </tr>
+                                    <tr>
+                                        <!-- 6 Part Inputs, each colspan 2 -->
+                                        <th colspan="2" class="p-0"><input type="text" class="form-control form-control-sm border-0 text-center p-0" id="evalPart_0" placeholder="Input Part"></th>
+                                        <th colspan="2" class="p-0"><input type="text" class="form-control form-control-sm border-0 text-center p-0" id="evalPart_1" placeholder="Input Part"></th>
+                                        <th colspan="2" class="p-0"><input type="text" class="form-control form-control-sm border-0 text-center p-0" id="evalPart_2" placeholder="Input Part"></th>
+                                        <th colspan="2" class="p-0"><input type="text" class="form-control form-control-sm border-0 text-center p-0" id="evalPart_3" placeholder="Input Part"></th>
+                                        <th colspan="2" class="p-0"><input type="text" class="form-control form-control-sm border-0 text-center p-0" id="evalPart_4" placeholder="Input Part"></th>
+                                        <th colspan="2" class="p-0"><input type="text" class="form-control form-control-sm border-0 text-center p-0" id="evalPart_5" placeholder="Input Part"></th>
+                                    </tr>
+                                    <tr>
+                                        <!-- Yes/No Headers x 6 -->
+                                        <th style="width: 30px;">Yes</th><th style="width: 30px;">No</th>
+                                        <th style="width: 30px;">Yes</th><th style="width: 30px;">No</th>
+                                        <th style="width: 30px;">Yes</th><th style="width: 30px;">No</th>
+                                        <th style="width: 30px;">Yes</th><th style="width: 30px;">No</th>
+                                        <th style="width: 30px;">Yes</th><th style="width: 30px;">No</th>
+                                        <th style="width: 30px;">Yes</th><th style="width: 30px;">No</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evalTableBody">
+                                    <!-- Rows -->
+                                </tbody>
+                                <tfoot>
+                                     <tr class="fw-bold bg-light">
+                                         <td colspan="3" class="text-end pe-3">Total Nilai</td>
+                                         <td id="totalYes_0" class="text-center">0</td><td id="totalNo_0" class="text-center">0</td>
+                                         <td id="totalYes_1" class="text-center">0</td><td id="totalNo_1" class="text-center">0</td>
+                                         <td id="totalYes_2" class="text-center">0</td><td id="totalNo_2" class="text-center">0</td>
+                                         <td id="totalYes_3" class="text-center">0</td><td id="totalNo_3" class="text-center">0</td>
+                                         <td id="totalYes_4" class="text-center">0</td><td id="totalNo_4" class="text-center">0</td>
+                                         <td id="totalYes_5" class="text-center">0</td><td id="totalNo_5" class="text-center">0</td>
+                                     </tr>
+                                     <tr class="fw-bold bg-light">
+                                         <td colspan="3" class="text-end pe-3">Persentase Nilai</td>
+                                         <td id="percYes_0" class="text-center">0%</td><td id="percNo_0" class="text-center">0%</td>
+                                         <td id="percYes_1" class="text-center">0%</td><td id="percNo_1" class="text-center">0%</td>
+                                         <td id="percYes_2" class="text-center">0%</td><td id="percNo_2" class="text-center">0%</td>
+                                         <td id="percYes_3" class="text-center">0%</td><td id="percNo_3" class="text-center">0%</td>
+                                         <td id="percYes_4" class="text-center">0%</td><td id="percNo_4" class="text-center">0%</td>
+                                         <td id="percYes_5" class="text-center">0%</td><td id="percNo_5" class="text-center">0%</td>
+                                     </tr>
+                                 </tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Signatures -->
+                         <div class="row mt-5 justify-content-center">
+                             <div class="col-5">
+                                 <table class="table table-bordered border-dark text-center align-middle" style="table-layout: fixed;">
+                                     <thead>
+                                         <tr>
+                                             <th style="height: 30px;">MENGETAHUI</th>
+                                             <th style="height: 30px;">MP TRAINING</th>
+                                             <th style="height: 30px;">TRAINER</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         <tr>
+                                             <td style="height: 80px; vertical-align: bottom;" class="p-0">
+                                                 <!-- Mengetahui Signature Area -->
+                                             </td>
+                                             <td style="height: 80px; vertical-align: bottom;" class="p-0">
+                                                 <!-- MP Signature Area -->
+                                             </td>
+                                             <td style="height: 80px; vertical-align: bottom;" class="p-0">
+                                                 <!-- Trainer Signature Area -->
+                                             </td>
+                                         </tr>
+                                         <tr>
+                                             <td class="p-0">
+                                                 <input type="text" id="sigMengetahui" class="form-control border-0 text-center fw-bold" placeholder="Input Nama" style="border-radius: 0;">
+                                             </td>
+                                             <td class="p-0">
+                                                 <div id="sigMpDisplay" class="fw-bold py-2"></div>
+                                             </td>
+                                             <td class="p-0">
+                                                 <select id="sigTrainer" class="form-select border-0 text-center fw-bold" style="border-radius: 0;">
+                                                     <option value="">Pilih nama</option>
+                                                 </select>
+                                             </td>
+                                         </tr>
+                                         <tr class="bg-light">
+                                             <td class="fw-bold small">LG/GH</td>
+                                             <td class="fw-bold small">OPERATOR</td>
+                                             <td class="fw-bold small">MP PPD</td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="saveEvalBtn">Simpan Data</button>
+                    <button type="button" class="btn btn-danger" id="exportEvalPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tanoko Modal -->
+    <div class="modal fade" id="tanokoModal" tabindex="-1">
+        <div class="modal-dialog modal-xl" style="max-width: 95%;">
+            <div class="modal-content">
+                <div class="modal-header bg-white text-dark border-bottom">
+                    <h5 class="modal-title"><i class="fas fa-chart-pie"></i> Summary TANOKO MP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    
+                    <div class="paper-form mx-auto" style="max-width: 100%;">
+                        <!-- Header -->
+                        <div class="paper-header d-flex mb-3">
+                            <div class="logo-box">
+                                <img id="tanokoFormLogo" src="" alt="Logo" style="max-width: 100%; max-height: 50px; display: none;">
+                                <span id="tanokoFormLogoPlaceholder" class="text-muted small">Logo</span>
+                            </div>
+                            <div class="title-box">
+                                <h5 class="mb-1 fw-bold">PT. SENTRAL MULTI INDOTAMA</h5>
+                                <h6 class="mb-0 fw-bold">TANOKO SKILL MAN POWER</h6>
+                            </div>
+                            <div class="info-box">
+                                <div class="info-row">
+                                    <div class="label">No. Document</div>
+                                    <div class="value">SMI-FR-PPD-02-04</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="label">Halaman</div>
+                                    <div class="value">1</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="label">Revisi</div>
+                                    <div class="value">0</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="label">Mulai Berlaku</div>
+                                    <div class="value">02 Februari 2026</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filters / Info Line -->
+                        <div class="row mb-2 border border-dark mx-0">
+                            <div class="col-md-6 border-end border-dark p-1 d-flex align-items-center">
+                                <span class="fw-bold me-2 small">Area :</span>
+                                <select id="tanokoArea" class="form-select form-select-sm border-0 bg-transparent fw-bold" style="width: auto;">
+                                    <option value="Semua Area">Semua Area</option>
+                                    <option value="SMI Karawang">SMI Karawang</option>
+                                    <option value="SMI Cibitung">SMI Cibitung</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 p-1 d-flex align-items-center">
+                                <span class="fw-bold me-2 small">Shift :</span>
+                                <select id="tanokoShift" class="form-select form-select-sm border-0 bg-transparent fw-bold" style="width: auto;">
+                                    <option value="Red">Red</option>
+                                    <option value="White">White</option>
+                                    <option value="Non-Shift">Non-Shift</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive mb-2">
+                            <table class="table table-bordered border-dark tanoko-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2" style="width: 40px;">NO</th>
+                                        <th rowspan="2">NAMA</th>
+                                        <th rowspan="2">NIK</th>
+                                        <th rowspan="2">JABATAN</th>
+                                        <th colspan="6">MODEL</th>
+                                        <th rowspan="2" style="width: 80px;">RATA - RATA SKILL</th>
+                                    </tr>
+                                    <tr id="tanokoModelHeaderRow"></tr>
+                                </thead>
+                                <tbody id="tanokoTableBody">
+                                    <!-- Rows populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <!-- Auto-save is implemented, but a manual save button gives reassurance -->
+                    <button type="button" class="btn btn-primary" id="saveTanokoBtn">Simpan Semua</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title"><i class="fas fa-cog"></i> Settings</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">Header Logo PDF</label>
+                        <div class="input-group input-group-sm">
+                            <input type="file" class="form-control" id="companyLogoInput" accept="image/*">
+                            <button class="btn btn-outline-secondary" type="button" id="uploadLogoBtn">Upload</button>
+                        </div>
+                        <div class="mt-2 text-center bg-light p-2 border rounded">
+                            <img id="navLogo" src="" alt="Logo Preview" style="max-height: 50px;" class="d-none">
+                            <span id="navLogoPlaceholder" class="text-muted small">No Logo Uploaded</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div>
+                        <label class="form-label fw-bold small text-muted">Google Sheets Sync</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" id="sheetUrlInput" placeholder="URL Google Sheet (CSV)">
+                            <button class="btn btn-primary" type="button" id="syncSheetBtn"><i class="fas fa-sync"></i> Sync</button>
+                        </div>
+                        <div id="syncStatus" class="mt-2 small fw-bold text-center"></div>
+                        <small class="d-block text-muted mt-2 fst-italic">
+                            *Pastikan link Google Sheet bersifat Publik (Anyone with the link) atau dipublish ke Web sebagai CSV.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File List Modal -->
+    <div class="modal fade" id="fileListModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="fileListModalTitle">Daftar File</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group" id="fileListGroup">
+                        <!-- File Links -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Preview Modal -->
+    <div class="modal fade" id="certModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Lihat Sertifikat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" id="certPreviewContainer">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pkMultiSkillEditModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Edit Angka Multi Skill By Part</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">No</th>
+                                    <th>Model</th>
+                                    <th style="width: 140px;">Target Part</th>
+                                    <th style="width: 140px;">Actual Part</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pkMultiSkillEditBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" id="pkMultiSkillSaveBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance List Modal -->
+    <div class="modal fade" id="attendanceModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Daftar Hadir Training - <span id="attendanceMonthTitle"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <button class="btn btn-success mb-3" id="btnAddAttendance"><i class="fas fa-plus"></i> Tambah Absensi</button>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Tanggal</th>
+                                    <th>Materi Training</th>
+                                    <th>Trainer</th>
+                                    <th>File Absensi</th>
+                                    <th>Keterangan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Attendance Modal -->
+    <div class="modal fade" id="inputAttendanceModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="inputAttendanceTitle">Input Daftar Hadir</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="attendanceForm">
+                        <input type="hidden" id="attId">
+                        <input type="hidden" id="attMonth">
+                        <div class="mb-3">
+                            <label class="form-label">Tanggal</label>
+                            <input type="date" id="attDate" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Materi Training</label>
+                            <input type="text" id="attMateri" class="form-control" list="attMateriOptions" required placeholder="Pilih atau ketik materi...">
+                            <datalist id="attMateriOptions">
+                                <!-- Reuse same options as Report Training -->
+                                <option value="5R">
+                                <option value="All Toyota Security Guideline">
+                                <option value="AP PIO Standart">
+                                <option value="APD (alat pelindung diri)">
+                                <option value="ATSG & VDQI">
+                                <option value="ATSG (All Toyota Security Guideline)">
+                                <option value="Audit AP PPO">
+                                <option value="Basic Mentality">
+                                <option value="Body Struktur">
+                                <option value="Build In Quality">
+                                <option value="Design Competency">
+                                <option value="Effective Manufacturing Leadership for Production Line Leader">
+                                <option value="Effective Manufacturing Leadership for Production Section Head">
+                                <option value="Effective Presentation">
+                                <option value="Fundamental Skill">
+                                <option value="Ide Berkonsep">
+                                <option value="Internal Auditor Training QMS ISO 9001:2015 Based on ISO 19011 : 2018">
+                                <option value="ISO 9001:2015 Quality Management Systems Awareness Training">
+                                <option value="ISO 9001:2015 Quality Management Systems Internal Auditor Training">
+                                <option value="Job Instruction">
+                                <option value="Key Performance Indicators">
+                                <option value="Kiken Youchi">
+                                <option value="Knowledge Tools & Training Alat Peraga">
+                                <option value="Leadership Programme">
+                                <option value="Motivational Leadership Training">
+                                <option value="Pelatihan P3K">
+                                <option value="Pembekalan Pembentukan Karakter">
+                                <option value="Performance Appraisal">
+                                <option value="Pratical Leadership Skill">
+                                <option value="Safety Driving">
+                                <option value="Safety Induksi">
+                                <option value="Salary Adjustment">
+                                <option value="Top Gun Leadership For Manager & Supervisor">
+                                <option value="TPS (Toyota Production System)">
+                                <option value="Training Needs Analysis (TNA) Base Performance and Competency">
+                                <option value="Warehouse Operation & Management">
+                                <option value="Workload Analysis">
+                            </datalist>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Trainer</label>
+                            <input type="text" id="attTrainer" class="form-control" list="attTrainerOptions" required placeholder="Pilih atau ketik trainer...">
+                             <datalist id="attTrainerOptions">
+                                <option value="Panji Budiman">
+                                <option value="Rizki Septian S.T">
+                                <option value="Eka Misyadi">
+                                <option value="Rizky Yulanda">
+                                <option value="Bangun Jovi Duano">
+                                <option value="Poeloeng">
+                                <option value="Andy Surya">
+                                <option value="Andi Marwantoko">
+                                <option value="Septiawan Dwi Janarko">
+                                <option value="Herlilda Mahenssa Ramadhan">
+                                <option value="Dian Eka S">
+                                <option value="Wahono">
+                                <option value="Wawan Iswanto">
+                                <option value="Alhamsah">
+                            </datalist>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Upload Scan Absensi (PDF/Image)</label>
+                            <input type="file" id="attFile" class="form-control" accept="image/*,application/pdf">
+                            <small class="text-muted">Kosongkan jika tidak ingin mengubah file saat edit.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Keterangan</label>
+                            <textarea id="attNote" class="form-control" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveAttendanceBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
